@@ -2,4 +2,4 @@
 
 A small package with some handy Python functions for GCP users.
 
-`pip install google-cloud-utilitiea`
+`pip install google-cloud-utilities`
