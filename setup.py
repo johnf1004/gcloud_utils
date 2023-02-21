@@ -16,7 +16,7 @@ VERSION = '0.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'google-cloud-bigquery==3.4.2', 'google-cloud-secret-manager==2.24.0', 'pandas>=1.5.3',
+    'google-cloud-bigquery==3.4.2', 'google-cloud-secret-manager==2.4.0', 'pandas>=1.5.3',
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
