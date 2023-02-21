@@ -1,1 +1,1 @@
-from gcp import *
+from google_cloud_utilities.gcp import *
