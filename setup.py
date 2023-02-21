@@ -6,9 +6,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'gcloud_utils'
+NAME = 'google_cloud_utilities'
 DESCRIPTION = 'A few handy Python functions for interacting with Google Cloud Platform'
-URL = 'https://github.com/johnf1004/gcloud_utils'
+URL = 'https://github.com/johnf1004/google_cloud_utilities'
 EMAIL = 'johnf1004@yahoo.co.uk'
 AUTHOR = 'John Foley'
 REQUIRES_PYTHON = '>=3.9.7'
