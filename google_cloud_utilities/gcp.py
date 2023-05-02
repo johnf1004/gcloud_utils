@@ -194,16 +194,17 @@ def create_bq_table_from_file_json(table_id, schema, bq_client, partition_col=No
     )
 
 
-def generate_feature_bq(sql, table_id, bq_client):
+def generate_feature_bq(sql, table_id, bq_client, labels={}):
     """
     :param sql: Bigquery command to execute
     :param table_id: Name of table to be created; projectname.datasetname.table
     :param bq_client: Bigquery client object
+    :param labels: Additional labels
     :return:
     """
 
     # If table does not already exist, set it up with partitioning
-    job_config = bigquery.QueryJobConfig(destination=table_id, write_disposition='WRITE_APPEND')
+    job_config = bigquery.QueryJobConfig(destination=table_id, write_disposition='WRITE_APPEND', labels=labels)
     try:
         bq_client.get_table(table_id)
     except NotFound:
