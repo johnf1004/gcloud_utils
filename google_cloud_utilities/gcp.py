@@ -194,12 +194,13 @@ def create_bq_table_from_file_json(table_id, schema, bq_client, partition_col=No
     )
 
 
-def generate_feature_bq(sql, table_id, bq_client, labels={}):
+def generate_feature_bq(sql, table_id, bq_client, labels={}, location='EU'):
     """
     :param sql: Bigquery command to execute
     :param table_id: Name of table to be created; projectname.datasetname.table
     :param bq_client: Bigquery client object
     :param labels: Additional labels
+    :param location: Location to run the query (default "EU")
     :return:
     """
 
@@ -212,7 +213,7 @@ def generate_feature_bq(sql, table_id, bq_client, labels={}):
             type_=bigquery.TimePartitioningType.DAY,
             field="event_timestamp")
 
-    query_job = bq_client.query(sql, job_config=job_config)
+    query_job = bq_client.query(sql, job_config=job_config, location=location)
     query_job.result()
 
 
