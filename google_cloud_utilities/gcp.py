@@ -376,3 +376,40 @@ def cloud_function_unpack_data(event):
     else:
         logging.warning("'data' field not found in event")
         return None
+
+
+def cloud_function_eventarc_get_bq_destination(event):
+    """
+    Function used to assist filtering eventarc triggers, so that function only runs if a specific table is the target of the BQ job
+    Standard eventarc filters dont allow you to filter to the table.
+    This function returns the dataset name and table name of the events destination table
+
+    :param event: Eventarc trigger event for GCP cloud functions
+    """
+
+    event_dict = json.loads(event.decode("utf-8"))
+
+    if event_dict.get('severity') == 'ERROR':
+        logging.info('error in bigquery job, finishing')
+        return
+    else:
+        job = event_dict['protoPayload']['serviceData']['jobCompletedEvent'].get('job')
+
+        if job:
+            if 'jobConfiguration' in job:
+                if 'query' in job['jobConfiguration']:
+
+                    query = job['jobConfiguration']['query']
+                    dataset = query['destinationTable']['datasetId']
+                    table = query['destinationTable']['tableId']
+
+                    return dataset, table
+                else:
+                    logging.warning("No 'query' field in jobConfiguration")
+                    return
+            else:
+                logging.warning("No 'jobConfiguration' field in job")
+                return
+        else:
+            logging.warning("No 'job' field found in jobCmopletedEvent")
+            return
