@@ -3,6 +3,10 @@ from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
 from google.cloud import secretmanager
 import pandas as pd
+from dateutil import parser
+import base64
+import json
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -324,3 +328,51 @@ def get_bq_jobs(since_time, bq_client):
     jobs_df = jobs_df.loc[jobs_df['startTime'] >= since_time, :]
     jobs_df = jobs_df.sort_values('query.totalBytesBilled', ascending=False)
     return jobs_df
+
+
+def cloud_function_prevent_infinite_retries(context, max_age_ms):
+    """
+    Function used in cloud functions which prevents infinite retries. Returns False if event has exceeded maximum threshold set by max_age_ms
+
+    :param context: Context argument from GCP cloud functions
+    :param max_age_ms: Time in ms after which the event times out
+    """
+
+    # Avoid infinite retries
+    if context:
+        timestamp = context.timestamp
+        event_time = parser.parse(timestamp)
+    else:
+        event_time = datetime.now(timezone.utc)
+
+    event_age = (datetime.now(timezone.utc) - event_time).total_seconds()
+    event_age_ms = event_age * 1000
+    
+    # Ignore events that are too old
+    max_age_ms = 30000
+    if event_age_ms > max_age_ms:
+        return False
+    else:
+        return True
+
+
+def cloud_function_unpack_data(event):
+    """
+    Function used in cloud functions which extracts the json message payload from pubsub events
+
+    :param event: Pubsub event to trigger GCP cloud functions
+    """
+    # Verify that the event contains data
+    if 'data' in event:
+        data = base64.b64decode(event['data']).decode('utf-8')
+
+        # Parse the JSON data in the Pub/Sub message
+        try:
+            message_data = json.loads(data)
+        except json.JSONDecodeError:
+            logging.error("Failed to parse JSON data in the message.")
+            raise
+        return message_data
+    else:
+        logging.warning("'data' field not found in event")
+        return None
