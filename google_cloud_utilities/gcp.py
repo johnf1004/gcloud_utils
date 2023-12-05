@@ -330,26 +330,33 @@ def get_bq_jobs(since_time, bq_client):
     return jobs_df
 
 
-def cloud_function_prevent_infinite_retries(context, max_age_ms):
+def cloud_function_prevent_infinite_retries(context, max_age_ms, override_event_time=None):
     """
     Function used in cloud functions which prevents infinite retries. Returns False if event has exceeded maximum threshold set by max_age_ms
 
     :param context: Context argument from GCP cloud functions
     :param max_age_ms: Time in ms after which the event times out
+    :param override_event_time: Gen2 functions dont have context.timestamp. We can supply another event_time to use instead
     """
 
     # Avoid infinite retries
     if context:
         timestamp = context.timestamp
-        event_time = parser.parse(timestamp)
+        if timestamp:
+            event_time = parser.parse(timestamp)
+        elif override_event_time:
+            event_time = parser.parse(override_event_time)
+        else:
+            logging.warning("No event time available to prevent infinite retries")
+            return
     else:
+        logging.warning("Context not available, using datetime.now as event_time to prevent infinite retries (unsafe)")
         event_time = datetime.now(timezone.utc)
 
     event_age = (datetime.now(timezone.utc) - event_time).total_seconds()
     event_age_ms = event_age * 1000
     
     # Ignore events that are too old
-    max_age_ms = 30000
     if event_age_ms > max_age_ms:
         return False
     else:
@@ -411,5 +418,5 @@ def cloud_function_eventarc_get_bq_destination(event):
                 logging.warning("No 'jobConfiguration' field in job")
                 return
         else:
-            logging.warning("No 'job' field found in jobCmopletedEvent")
+            logging.warning("No 'job' field found in jobCompletedEvent")
             return
