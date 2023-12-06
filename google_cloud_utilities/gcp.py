@@ -453,10 +453,10 @@ def cloud_function_eventarc_get_bq_destination(event):
                     return dataset, table
                 else:
                     logging.warning("No 'query' field in jobConfiguration")
-                    return
+                    return None, None
             else:
                 logging.warning("No 'jobConfiguration' field in job")
-                return
+                return None, None
         else:
             logging.warning("No 'job' field found in jobCompletedEvent")
-            return
+            return None, None

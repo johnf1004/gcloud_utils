@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.4.1](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.0...v0.4.1) (2023-12-06)
+
+### Bug fixes
+
+* cloud_function_eventarc_get_bq_destination returns tuple of two Nones instead of single None if missing fields
+
 # [0.4.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.3.0...v0.4.0) (2023-12-06)
 
 ### Features
