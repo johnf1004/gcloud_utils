@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.4.2](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.1...v0.4.2) (2023-12-06)
+
+### Bug fixes
+
+* cloud_function_prevent_infinite_retries attempts to use override_event_time if context is empty dict or None
+
 # [0.4.1](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.0...v0.4.1) (2023-12-06)
 
 ### Bug fixes

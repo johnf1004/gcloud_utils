@@ -350,8 +350,11 @@ def cloud_function_prevent_infinite_retries(context, max_age_ms, override_event_
             logging.warning("No event time available to prevent infinite retries")
             return
     else:
-        logging.warning("Context not available, using datetime.now as event_time to prevent infinite retries (unsafe)")
-        event_time = datetime.now(timezone.utc)
+        if override_event_time:
+            event_time = parser.parse(override_event_time)
+        else:
+            logging.warning("Context not available, using datetime.now as event_time to prevent infinite retries (unsafe)")
+            event_time = datetime.now(timezone.utc)
 
     event_age = (datetime.now(timezone.utc) - event_time).total_seconds()
     event_age_ms = event_age * 1000
