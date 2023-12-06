@@ -1,6 +1,12 @@
 # Changelog
 
-# [0.3.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.2.1...v0.3.0) (2023-12-05)
+# [0.4.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.3.0...v0.4.0) (2023-12-06)
+
+### Features
+
+* Added function for eventarc cloud_function_eventarc_timestamp which gets timestamp from eventarc trigger
+
+# [0.3.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.2.1...v0.3.0) (2023-12-06)
 
 ### Features
 

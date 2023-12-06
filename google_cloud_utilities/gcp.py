@@ -414,6 +414,17 @@ def cloud_function_eventarc_unpack_labels(event):
             return
 
 
+def cloud_function_eventarc_timestamp(event):
+    """
+    Function used to extract event timestamp from eventarc triggers
+
+    :param event: Eventarc trigger event for GCP cloud functions
+    """
+
+    event_dict = json.loads(event.decode("utf-8"))
+    return event_dict["receiveTimestamp"]
+
+
 def cloud_function_eventarc_get_bq_destination(event):
     """
     Function used to assist filtering eventarc triggers, so that function only runs if a specific table is the target of the BQ job
