@@ -383,6 +383,35 @@ def cloud_function_unpack_data(event):
     else:
         logging.warning("'data' field not found in event")
         return None
+    
+
+def cloud_function_eventarc_unpack_labels(event):
+    """
+    Function used to extract labels from eventarc triggers
+    Bigquery jobs can be sent with labels attached. This would be a useful way to pass arguments to cloud functions
+    This function extracts those labels
+
+    :param event: Eventarc trigger event for GCP cloud functions
+    """
+
+    event_dict = json.loads(event.decode("utf-8"))
+
+    if event_dict.get('severity') == 'ERROR':
+        logging.info('error in bigquery job, finishing')
+        return
+    else:
+        job = event_dict['protoPayload']['serviceData']['jobCompletedEvent'].get('job')
+
+        if job:
+            if 'jobConfiguration' in job:
+                labels = job['jobConfiguration'].get('labels', {})
+                return labels
+            else:
+                logging.warning("No 'jobConfiguration' field in job")
+                return
+        else:
+            logging.warning("No 'job' field found in jobCompletedEvent")
+            return
 
 
 def cloud_function_eventarc_get_bq_destination(event):
