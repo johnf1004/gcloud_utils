@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.4.3](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.2...v0.4.3) (2023-12-11)
+
+### Bug fixes
+
+* cloud_function_eventarc_get_bq_destination messages with no "query" field will work if they have "load" field
+
 # [0.4.2](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.1...v0.4.2) (2023-12-06)
 
 ### Bug fixes
