@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.4.4](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.3...v0.4.4) (2023-12-12)
+
+### Bug fixes
+
+* Bug fix in cloud_function_eventarc_get_bq_destination
+
 # [0.4.3](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.2...v0.4.3) (2023-12-11)
 
 ### Bug fixes
