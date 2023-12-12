@@ -461,6 +461,8 @@ def cloud_function_eventarc_get_bq_destination(event):
                     dataset = load['destinationTable']['datasetId']
                     table = load['destinationTable']['tableId']
 
+                    return dataset, table
+
                 else:
                     logging.warning("No 'query' or 'load' field in jobConfiguration")
                     return None, None
