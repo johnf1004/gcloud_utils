@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.5.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.4...v0.5.0) (2023-12-13)
+
+### Features
+
+* New function append_rows_bq_json for smoother way to insert rows to table (with labels in job config)
+
 # [0.4.4](https://github.com/johnf1004/google_cloud_utilities/compare/v0.4.3...v0.4.4) (2023-12-12)
 
 ### Bug fixes
