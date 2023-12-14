@@ -363,6 +363,39 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels):
         raise
 
 
+def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels):
+    """
+    Append rows from a pandas dataframe to an existing bigquery table
+
+    :param table_id: Name of the table to insert the dataframe; projectname.datasetname.table
+    :param bq_client: Bigquery client object
+    :param labels: Extra labels to pass to the job config
+    """
+
+    table_ref = bq_client.get_table(table_id)
+
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.CSV,
+        write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND,
+        labels=labels
+    )
+
+    job = bq_client.load_table_from_dataframe(
+        df_to_insert,
+        table_ref,
+        job_config=job_config
+    )
+
+    job.result()
+
+    try:
+        assert job.state == "DONE"
+        logger.info("Data loaded successfully")
+    except:
+        logger.exception("Error loading data: {}".format(job.errors))
+        raise
+
+
 def cloud_function_prevent_infinite_retries(context, max_age_ms, override_event_time=None):
     """
     Function used in cloud functions which prevents infinite retries. Returns False if event has exceeded maximum threshold set by max_age_ms
