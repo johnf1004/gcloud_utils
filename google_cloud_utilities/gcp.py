@@ -7,6 +7,7 @@ from dateutil import parser
 import base64
 import json
 from datetime import datetime, timezone
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +229,7 @@ def get_password(pwd_path):
     return pwd
 
 
-def download_blob(bucket_name, source_blob_name, destination_file_name, storage_client):
+def download_blob(bucket_name, source_blob_name, destination_file_name, storage_client, tmp=False):
     """Downloads a blob from the bucket."""
     # The ID of your GCS bucket
     # bucket_name = "your-bucket-name"
@@ -246,7 +247,11 @@ def download_blob(bucket_name, source_blob_name, destination_file_name, storage_
     # any content from Google Cloud Storage. As we don't need additional data,
     # using `Bucket.blob` is preferred here.
     blob = bucket.blob(source_blob_name)
-    blob.download_to_filename('/tmp/' + destination_file_name)
+
+    if tmp:
+        blob.download_to_filename('/tmp/' + destination_file_name)
+    else:
+        blob.download_to_filename(destination_file_name)
 
     print(
         "Downloaded storage object {} from bucket {} to local file {}.".format(
@@ -538,3 +543,11 @@ def cloud_function_eventarc_get_bq_destination(event):
         else:
             logging.warning("No 'job' field found in jobCompletedEvent")
             return None, None
+
+def get_gcp_identity_token():
+    # Execute 'gcloud auth print-identity-token' command
+    result = subprocess.run(["gcloud", "auth", "print-identity-token"], capture_output=True, text=True, check=True)
+
+    # Extract and return the identity token
+    identity_token = result.stdout.strip()
+    return identity_token

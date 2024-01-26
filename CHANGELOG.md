@@ -1,5 +1,15 @@
 # Changelog
 
+# [0.7.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.6.0...v0.7.0) (2024-01-26)
+
+### Features
+
+* New function get_gcp_identity_token using subprocess, useful for making cloud run calls
+
+### Bug fixes
+
+* download_blob function doesn't force download to /tmp anymore, can specify tmp=False
+
 # [0.6.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.5.0...v0.6.0) (2023-12-14)
 
 ### Features
