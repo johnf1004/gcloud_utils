@@ -45,7 +45,22 @@ jobs:
           else
               echo "NEW_RELEASE=true" >> "$GITHUB_OUTPUT"
           fi
-          
+
+      - name: Install deployment reqs
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: pip install build twine
+        
+      - name: Build package
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: python -m build
+
+      - name: Deploy to Pypi
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: twine upload --repository google-cloud-utilities dist/*
+        env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
       - name: Create release if approved and merged
         id: create_release
         if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
@@ -61,21 +76,6 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install deployment reqs
-        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
-        run: pip install build twine
-
-      - name: Build package
-        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
-        run: python -m build
-
-      - name: Deploy to artifact registry
-        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
-        run: twine upload dist/*
-        env:
-            TWINE_USERNAME: __token__
-            TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-  
     permissions:
       contents: write
       id-token: write
