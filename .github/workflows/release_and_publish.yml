@@ -1,0 +1,81 @@
+name: Release and publish new version to Pypi
+run-name: ${{ github.actor }} is releasing new strategies to main
+
+on:
+  pull_request.master:
+    types:
+      - closed
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Get version from setup.py
+        id: get_new_version
+        run: echo "NEW_VERSION=$(python setup.py --version)" >> $GITHUB_OUTPUT
+
+      - name: Get existing version from releases
+        id: get_existing_version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Compare versions
+        id: compare_versions
+        run: |
+          echo "old version is ${{ steps.get_existing_version.outputs.release }} and new version is  v${{ steps.get_new_version.outputs.NEW_VERSION }} "
+          if [[ ${{ steps.get_existing_version.outputs.release }} == v${{ steps.get_new_version.outputs.NEW_VERSION }} &&
+                ${{ github.event_name == 'pull_request' }} && 
+                ${{ github.event.action == 'closed' }} && 
+                ${{ github.event.pull_request.merged }} &&
+                ${{ startsWith(github.event.pull_request.base.ref, 'main') }} ]]; then
+
+              echo "NEW_RELEASE=false" >> "$GITHUB_OUTPUT"
+          else
+              echo "NEW_RELEASE=true" >> "$GITHUB_OUTPUT"
+          fi
+          
+      - name: Create release if approved and merged
+        id: create_release
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        uses: ncipollo/release-action@v1
+        env:
+          VERSION: ${{ steps.get_new_version.outputs.NEW_VERSION }}
+        with:
+          tag: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          body: |
+            Release v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install deployment reqs
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: pip install build twine
+
+      - name: Build package
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: python -m build
+
+      - name: Deploy to artifact registry
+        if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
+        run: twine upload dist/*
+        env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+  
+    permissions:
+      contents: write
+      id-token: write
+  
