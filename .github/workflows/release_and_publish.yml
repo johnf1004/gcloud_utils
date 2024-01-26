@@ -1,5 +1,4 @@
 name: Release and publish new version to Pypi
-run-name: ${{ github.actor }} is releasing new strategies to main
 
 on:
   pull_request:
