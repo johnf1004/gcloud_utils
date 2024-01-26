@@ -56,7 +56,7 @@ jobs:
 
       - name: Deploy to Pypi
         if: steps.compare_versions.outputs.NEW_RELEASE == 'true'
-        run: twine upload --repository google-cloud-utilities dist/*
+        run: twine upload dist/*
         env:
             TWINE_USERNAME: __token__
             TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
