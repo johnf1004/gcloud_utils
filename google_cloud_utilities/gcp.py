@@ -8,6 +8,8 @@ import base64
 import json
 from datetime import datetime, timezone
 import subprocess
+import google.oauth2.id_token
+import google.auth.transport.requests
 
 logger = logging.getLogger(__name__)
 
@@ -544,10 +546,7 @@ def cloud_function_eventarc_get_bq_destination(event):
             logging.warning("No 'job' field found in jobCompletedEvent")
             return None, None
 
-def get_gcp_identity_token():
-    # Execute 'gcloud auth print-identity-token' command
-    result = subprocess.run(["gcloud", "auth", "print-identity-token"], capture_output=True, text=True, check=True)
-
-    # Extract and return the identity token
-    identity_token = result.stdout.strip()
-    return identity_token
+def get_gcp_identity_token(audience_url):
+    request = google.auth.transport.requests.Request()
+    id_token = google.oauth2.id_token.fetch_id_token(request, audience_url)
+    return id_token

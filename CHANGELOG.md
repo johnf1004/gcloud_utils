@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.7.4](https://github.com/johnf1004/google_cloud_utilities/compare/v0.7.0...v0.7.4) (2024-02-15)
+
+### Features
+
+* Fixes for get_gcp_identity_token, doesnt use subprocess anymore
+
 # [0.7.0](https://github.com/johnf1004/google_cloud_utilities/compare/v0.6.0...v0.7.0) (2024-01-26)
 
 ### Features
