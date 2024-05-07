@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import subprocess
 import google.oauth2.id_token
 import google.auth.transport.requests
+from google.api_core.exceptions import BadRequest
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +144,12 @@ def create_bq_table_from_file(file, table_id, schema, field_delimiter, bq_client
     with open(file, "rb") as source_file:
         job = bq_client.load_table_from_file(source_file, table_id, job_config=job_config)
 
-    job.result()  # Waits for the job to complete.
+    try:
+        job.result()  # Waits for the job to complete.
+    except BadRequest:
+        logging.error(f"Job failed, errors collection = {job.errors}")
+        raise
+
 
     table = bq_client.get_table(table_id)  # Make an API request.
     logger.info(
@@ -183,7 +189,11 @@ def create_bq_table_from_file_json(table_id, schema, bq_client, partition_col=No
         # Set up job
         with open(file, "rb") as source_file:
             job = bq_client.load_table_from_file(source_file, table_id, job_config=job_config)
-            job.result()
+            try:
+                job.result()  # Waits for the job to complete.
+            except BadRequest:
+                logging.error(f"Job failed, errors collection = {job.errors}")
+                raise
     elif uri:
         job = bq_client.load_table_from_uri(
             uri,
@@ -191,7 +201,11 @@ def create_bq_table_from_file_json(table_id, schema, bq_client, partition_col=No
             location="EU",  # Must match the destination dataset location.
             job_config=job_config,
         )
-        job.result()  # Waits for the job to complete.
+        try:
+            job.result()  # Waits for the job to complete.
+        except BadRequest:
+            logging.error(f"Job failed, errors collection = {job.errors}")
+            raise
 
     table = bq_client.get_table(table_id)  # Make an API request.
     logger.info(
@@ -360,7 +374,11 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels):
         job_config=job_config
     )
 
-    job.result()
+    try:
+        job.result()  # Waits for the job to complete.
+    except BadRequest:
+        logging.error(f"Job failed, errors collection = {job.errors}")
+        raise
 
     try:
         assert job.state == "DONE"
@@ -393,8 +411,12 @@ def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels):
         job_config=job_config
     )
 
-    job.result()
-
+    try:
+        job.result()  # Waits for the job to complete.
+    except BadRequest:
+        logging.error(f"Job failed, errors collection = {job.errors}")
+        raise
+    
     try:
         assert job.state == "DONE"
         logger.info("Data loaded successfully")
