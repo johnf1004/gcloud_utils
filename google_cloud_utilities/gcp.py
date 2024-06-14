@@ -7,7 +7,6 @@ from dateutil import parser
 import base64
 import json
 from datetime import datetime, timezone
-import subprocess
 import google.oauth2.id_token
 import google.auth.transport.requests
 from google.api_core.exceptions import BadRequest
