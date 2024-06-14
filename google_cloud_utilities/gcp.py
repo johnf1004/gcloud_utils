@@ -7,7 +7,6 @@ from dateutil import parser
 import base64
 import json
 from datetime import datetime, timezone
-import subprocess
 import google.oauth2.id_token
 import google.auth.transport.requests
 from google.api_core.exceptions import BadRequest
@@ -91,7 +90,7 @@ def execute_bigquery_command(sql, bq_client, location='EU'):
     return result
 
 
-def create_bq_table(table_id, partition_col, partition_type, schema, bq_client):
+def create_bq_table(table_id, partition_col, partition_type, schema, bq_client, expires=None):
     """
     Create partitioned table in bigquery
     :param table_id: Name of table to be created; projectname.datasetname.table
@@ -99,6 +98,7 @@ def create_bq_table(table_id, partition_col, partition_type, schema, bq_client):
     :param partition_type: bigquery.TimePartitioningType.MONTH or bigquery.TimePartitioningType.DAY,
     :param schema: Schema, list of bigquery.schema.SchemaField objects
     :param bq_client Bigquery client object
+    :param expires: Expiration date for the table
     """
 
     table = bigquery.Table(table_id, schema=schema)
@@ -106,6 +106,9 @@ def create_bq_table(table_id, partition_col, partition_type, schema, bq_client):
         type_=partition_type,
         field=partition_col
     )
+    if expires:
+        assert isinstance(expires, datetime), "Expiration date must be a datetime object"
+        table.expires = expires
 
     table = bq_client.create_table(table)
     logger.info(
