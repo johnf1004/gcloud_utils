@@ -12,7 +12,7 @@ URL = 'https://github.com/johnf1004/google_cloud_utilities'
 EMAIL = 'johnf1004@yahoo.co.uk'
 AUTHOR = 'John Foley'
 REQUIRES_PYTHON = '>=3.9.7'
-VERSION = '0.7.6'
+VERSION = '0.7.7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

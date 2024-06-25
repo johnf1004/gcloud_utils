@@ -90,12 +90,13 @@ def execute_bigquery_command(sql, bq_client, location='EU'):
     return result
 
 
-def create_bq_table(table_id, partition_col, partition_type, schema, bq_client, expires=None):
+def create_bq_table(table_id, partition_col, partition_type, schema, bq_client, partition_expiration=None, expires=None):
     """
     Create partitioned table in bigquery
     :param table_id: Name of table to be created; projectname.datasetname.table
     :param partition_col: Column to partition on
     :param partition_type: bigquery.TimePartitioningType.MONTH or bigquery.TimePartitioningType.DAY,
+    :param partition_expiration: Milliseconds until a partition expires 
     :param schema: Schema, list of bigquery.schema.SchemaField objects
     :param bq_client Bigquery client object
     :param expires: Expiration date for the table
@@ -104,7 +105,8 @@ def create_bq_table(table_id, partition_col, partition_type, schema, bq_client, 
     table = bigquery.Table(table_id, schema=schema)
     table.time_partitioning = bigquery.TimePartitioning(
         type_=partition_type,
-        field=partition_col
+        field=partition_col,
+        expiration_ms=partition_expiration
     )
     if expires:
         assert isinstance(expires, datetime), "Expiration date must be a datetime object"
@@ -117,8 +119,7 @@ def create_bq_table(table_id, partition_col, partition_type, schema, bq_client, 
         )
     )
 
-
-def create_bq_table_from_file(file, table_id, schema, field_delimiter, bq_client, partition_col=None):
+def create_bq_table_from_file(file, table_id, field_delimiter, partition_col, partition_type, schema, bq_client, partition_expiration=None):
     """
     Create a bigquery table from a local csv file
 
@@ -140,8 +141,9 @@ def create_bq_table_from_file(file, table_id, schema, field_delimiter, bq_client
 
     if partition_col:
         job_config.time_partitioning = bigquery.TimePartitioning(
-            type_=bigquery.TimePartitioningType.DAY,
-            field=partition_col)
+            type_=partition_type,
+            field=partition_col,
+            expiration_ms=partition_expiration)
 
     # Set up job
     with open(file, "rb") as source_file:
