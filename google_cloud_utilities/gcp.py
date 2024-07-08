@@ -577,3 +577,58 @@ def get_gcp_identity_token(audience_url):
     request = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(request, audience_url)
     return id_token
+
+
+pandas_to_bq_schema = {
+    pd.Float64Dtype: 'FLOAT',
+    pd.Int64Dtype: 'INTEGER',
+    pd.StringDtype: 'STRING',
+    pd.BooleanDtype: 'BOOLEAN',
+    pd.CategoricalDtype: 'STRING',
+    pd.PeriodDtype: 'STRING',
+    pd.IntervalDtype: 'STRING',
+    pd.Int8Dtype: 'INTEGER',
+    pd.Int16Dtype: 'INTEGER',
+    pd.Int32Dtype: 'INTEGER',
+    pd.Int64Dtype: 'INTEGER',
+    pd.UInt8Dtype: 'INTEGER',
+    pd.UInt16Dtype: 'INTEGER',
+    pd.UInt32Dtype: 'INTEGER',
+    pd.UInt64Dtype: 'INTEGER'
+}
+
+
+def update_schema_if_needed(table_id, dataframe, bq_client):
+    """
+    Function to update the schema of a bigquery table if it is missing columns
+
+    :param table_id: Name of the table to update; projectname.datasetname.table
+    :param dataframe: Pandas dataframe which needs to be uploaded
+    :param bq_client: Bigquery client object
+    """
+
+    table = bq_client.get_table(table_id)
+    schema = table.schema
+    names = [x.name for x in schema]
+    new_columns = [x for x in dataframe.columns if x not in names]
+    
+    if len(new_columns) > 0:
+        new_column_types = [pandas_to_bq_schema[type(dataframe[x].dtype)] for x in new_columns]
+        
+        new_columns_schemas = [bigquery.SchemaField(new_columns[i], new_column_types[i]) for i in range(len(new_columns))]
+        
+        new_schema = schema + new_columns_schemas
+        table.schema = new_schema
+        bq_client.update_table(table, ["schema"])
+        
+        logger.info(f"Added columns {new_columns} to schema")
+        
+    removed_columns = [x for x in names if x not in dataframe.columns]
+    
+    if len(removed_columns) > 0:
+        for col_to_remove in removed_columns:
+            drop_qry = "ALTER TABLE `racing_db.variable_monitoring` DROP COLUMN " + col_to_remove
+            bq_client.query(drop_qry).result()
+            logger.info("Dropped column: ", col_to_remove)
+        
+    return
