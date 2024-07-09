@@ -580,6 +580,7 @@ def get_gcp_identity_token(audience_url):
 
 
 pandas_to_bq_schema = {
+    pd.Float32Dtype: 'FLOAT',
     pd.Float64Dtype: 'FLOAT',
     pd.Int64Dtype: 'INTEGER',
     pd.StringDtype: 'STRING',
@@ -594,7 +595,8 @@ pandas_to_bq_schema = {
     pd.UInt8Dtype: 'INTEGER',
     pd.UInt16Dtype: 'INTEGER',
     pd.UInt32Dtype: 'INTEGER',
-    pd.UInt64Dtype: 'INTEGER'
+    pd.UInt64Dtype: 'INTEGER',
+    pd.DatetimeTZDtype: 'TIMESTAMP'
 }
 
 
