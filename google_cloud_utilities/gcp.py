@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import google.oauth2.id_token
 import google.auth.transport.requests
 from google.api_core.exceptions import BadRequest
+import google.auth
 
 logger = logging.getLogger(__name__)
 
