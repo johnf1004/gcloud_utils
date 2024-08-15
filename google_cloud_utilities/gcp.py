@@ -644,7 +644,7 @@ def update_schema_if_needed(table_id, dataframe, bq_client):
         
     return
 
-def check_instance_status(instances_client, zone, instance_name=None, internal_ip=None):
+def check_instance_info(instances_client, zone, instance_name=None, internal_ip=None, key_to_return="status"):
     """
     Function to check the status of a GCP instance
 
@@ -658,8 +658,6 @@ def check_instance_status(instances_client, zone, instance_name=None, internal_i
     assert instance_name or internal_ip, "Must pass either instance_name or internal_ip"
     
     instances = instances_client.list(project=project_id, zone=zone)
-
-    key_to_return = "status"
     
     if instance_name:
         instances_name = {x.name: getattr(x, key_to_return) for x in instances}
