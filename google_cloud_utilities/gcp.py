@@ -10,8 +10,11 @@ from datetime import datetime, timezone
 import google.oauth2.id_token
 import google.auth.transport.requests
 from google.api_core.exceptions import BadRequest
+import google.auth
 
 logger = logging.getLogger(__name__)
+
+_, project_id = google.auth.default()
 
 
 def get_most_recent_date(fs, gcs_path, max_date):
@@ -599,6 +602,10 @@ pandas_to_bq_schema = {
     pd.DatetimeTZDtype: 'TIMESTAMP'
 }
 
+def infer_schema_from_pandas(dataframe):
+    dataframe = dataframe.convert_dtypes()
+    schema = [bigquery.SchemaField(x, pandas_to_bq_schema[type(dataframe.dtypes[x])]) for x in dataframe.columns]
+    return schema    
 
 def update_schema_if_needed(table_id, dataframe, bq_client):
     """
@@ -637,3 +644,40 @@ def update_schema_if_needed(table_id, dataframe, bq_client):
                 logger.info(f"Column {col_to_remove} not found so cannot be dropped")
         
     return
+
+def check_instance_info(instances_client, zone, instance_name=None, internal_ip=None, key_to_return="status"):
+    """
+    Function to check the status of a GCP instance
+
+    :param project_id: GCP project id
+    :param zone: GCP zone
+    :param instance_name: Name of the instance
+    :param compute_client: GCP compute client
+    """
+
+    # Must either pass instance name or internal ip, not both
+    assert instance_name or internal_ip, "Must pass either instance_name or internal_ip"
+    
+    instances = instances_client.list(project=project_id, zone=zone)
+    
+    if instance_name:
+        instances_name = {x.name: getattr(x, key_to_return) for x in instances}
+        
+        if instance_name in instances_name:
+            return instances_name[instance_name]
+        else:
+            raise BaseException(f"Instance {instance_name} not found in zone {zone}") 
+
+    if internal_ip:
+        instances_ip = {}
+        for instance in instances:
+            for ni in instance.network_interfaces:
+                instances_ip[ni.network_i_p] = getattr(instance, key_to_return)
+        
+        if internal_ip in instances_ip:
+            return instances_ip[internal_ip]
+        else:
+            raise BaseException(f"Instance with internal ip {internal_ip} not found in zone {zone}")
+            
+
+
