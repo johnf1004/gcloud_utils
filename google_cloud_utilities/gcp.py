@@ -359,13 +359,14 @@ def get_bq_jobs(since_time, bq_client):
     return jobs_df
 
 
-def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels):
+def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels, schema):
     """
     Append rows from a list of dictionaries to an existing bigquery table
 
     :param table_id: Name of the table to insert the rows projectname.datasetname.table
     :param bq_client: Bigquery client object
     :param labels: Extra labels to pass to the job config
+    :param schema: Schema, list of bigquery.schema.SchemaField objects
     """
 
     table_ref = bq_client.get_table(table_id)
@@ -373,7 +374,8 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels):
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
         write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND,
-        labels=labels
+        labels=labels,
+        schema=schema
     )
 
     job = bq_client.load_table_from_json(
@@ -396,13 +398,14 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels):
         raise
 
 
-def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels):
+def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels, schema):
     """
     Append rows from a pandas dataframe to an existing bigquery table
 
     :param table_id: Name of the table to insert the dataframe; projectname.datasetname.table
     :param bq_client: Bigquery client object
     :param labels: Extra labels to pass to the job config
+    :param schema: Schema, list of bigquery.schema.SchemaField objects
     """
 
     table_ref = bq_client.get_table(table_id)
@@ -410,7 +413,8 @@ def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels):
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.CSV,
         write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND,
-        labels=labels
+        labels=labels,
+        schema=schema
     )
 
     job = bq_client.load_table_from_dataframe(
