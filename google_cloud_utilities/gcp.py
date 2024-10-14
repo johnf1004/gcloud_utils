@@ -359,7 +359,7 @@ def get_bq_jobs(since_time, bq_client):
     return jobs_df
 
 
-def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels, schema):
+def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels, schema, partition_col=None, partition_type=None):
     """
     Append rows from a list of dictionaries to an existing bigquery table
 
@@ -367,9 +367,24 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels, schema):
     :param bq_client: Bigquery client object
     :param labels: Extra labels to pass to the job config
     :param schema: Schema, list of bigquery.schema.SchemaField objects
+    :param partition_col: Column to use as partition in the table
+    :param partition_type: Type of partition to use (bigquery.TimePartitioningType.MONTH or bigquery.TimePartitioningType.DAY)
     """
 
-    table_ref = bq_client.get_table(table_id)
+    try:
+        table_ref = bq_client.get_table(table_id)
+    except NotFound:
+        assert partition_col, "Table does not exist, partition_col must be supplied"
+        assert partition_type, "Table does not exist, partition_type must be supplied"
+
+        create_bq_table(table_id=table_id,
+                        partition_col=partition_col,
+                        partition_type=partition_type,
+                        schema=schema,
+                        bq_client=bq_client,
+                        partition_expiration=None,
+                        expires=None)
+        table_ref = bq_client.get_table(table_id)
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
@@ -398,7 +413,7 @@ def append_rows_bq_json(rows_to_insert, table_id, bq_client, labels, schema):
         raise
 
 
-def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels, schema):
+def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels, schema, partition_col=None, partition_type=None):  
     """
     Append rows from a pandas dataframe to an existing bigquery table
 
@@ -406,10 +421,27 @@ def append_rows_bq_pandas(df_to_insert, table_id, bq_client, labels, schema):
     :param bq_client: Bigquery client object
     :param labels: Extra labels to pass to the job config
     :param schema: Schema, list of bigquery.schema.SchemaField objects
+    :param partition_col: Column to use as partition in the table
+    :param partition_type: Type of partition to use (bigquery.TimePartitioningType.MONTH or bigquery.TimePartitioningType.DAY)
     """
 
-    table_ref = bq_client.get_table(table_id)
 
+    try:
+        table_ref = bq_client.get_table(table_id)
+    except NotFound:
+        assert partition_col, "Table does not exist, partition_col must be supplied"
+        assert partition_type, "Table does not exist, partition_type must be supplied"
+
+        create_bq_table(table_id=table_id,
+                        partition_col=partition_col,
+                        partition_type=partition_type,
+                        schema=schema,
+                        bq_client=bq_client,
+                        partition_expiration=None,
+                        expires=None)
+        table_ref = bq_client.get_table(table_id)
+        
+        
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.CSV,
         write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND,
