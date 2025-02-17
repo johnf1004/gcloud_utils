@@ -673,7 +673,7 @@ def update_schema_if_needed(table_id, dataframe, bq_client):
     if len(removed_columns) > 0:
         for col_to_remove in removed_columns:
             try:
-                drop_qry = "ALTER TABLE `racing_db.variable_monitoring` DROP COLUMN " + col_to_remove
+                drop_qry = "ALTER TABLE `{table_id}` DROP COLUMN " + col_to_remove
                 bq_client.query(drop_qry).result()
                 logger.info("Dropped column: ", col_to_remove)
             except BadRequest:
